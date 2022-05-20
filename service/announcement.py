@@ -2,16 +2,12 @@ import asyncio
 import random
 from typing import Any, Dict, Optional, List
 from sqlalchemy.ext.asyncio import async_scoped_session
+from service.base import BaseService
 from provider import AnnouncementProvider
 from enum import Enum
 import domain
 import exceptions
 from datetime import date, time, datetime
-
-
-class BaseService:
-    def __init__(self, session: async_scoped_session):
-        pass
 
 
 class AnnouncementType(str, Enum):

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import List, Optional, Union
 from pydantic import BaseModel
 from datetime import date, time, datetime
 
@@ -6,6 +6,26 @@ from datetime import date, time, datetime
 class AbstractBaseModel(BaseModel):
     class Config:
         orm_mode = True
+
+
+class User(AbstractBaseModel):
+    id: int
+    username: str
+    email: Optional[Union[str, None]] = None
+    phone_number: Optional[Union[str, None]] = None
+    full_name: Optional[Union[str, None]] = None
+
+
+class UserInDatabase(User):
+    password: str
+
+
+class Token(BaseModel):
+    token: str
+
+
+class TokenData(BaseModel):
+    username: Union[str, None] = None
 
 
 class Announcement(AbstractBaseModel):

@@ -3,6 +3,18 @@ import models
 import domain
 
 
+def record_to_user_with_password(
+        record: models.User
+) -> domain.UserInDatabase:
+    return domain.UserInDatabase.from_orm(record)
+
+
+def record_to_user_without_password(
+        record: models.User
+) -> domain.User:
+    return domain.User.from_orm(record)
+
+
 def record_to_announcement(
         record: models.Announcement
 ) -> domain.Announcement:

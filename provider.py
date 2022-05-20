@@ -23,6 +23,40 @@ class BaseProvider:
         return data
 
 
+class UserProvider(BaseProvider):
+    _model: Type[models.User] = models.User
+
+    async def user_with_password(
+        self,
+        username: str
+    ) -> domain.UserInDatabase:
+
+        select_stmt = select(self._model)
+        if username is not ...:
+            select_stmt = select_stmt.where(self._model.username == username)
+
+        record = await self.session.scalar(select_stmt)
+        if not record:
+            raise exceptions.UserDoesNotExist
+
+        return adapters.record_to_user_with_password(record=record)
+
+    async def user_without_password(
+        self,
+        username: str
+    ) -> domain.User:
+
+        select_stmt = select(self._model)
+        if username is not ...:
+            select_stmt = select_stmt.where(self._model.username == username)
+
+        record = await self.session.scalar(select_stmt)
+        if not record:
+            raise exceptions.UserDoesNotExist
+
+        return adapters.record_to_user_without_password(record=record)
+
+
 class AnnouncementProvider(BaseProvider):
     _model: Type[models.Announcement] = models.Announcement
 
@@ -71,7 +105,7 @@ class AnnouncementProvider(BaseProvider):
         select_stmt = select(self._model)
 
         if name is not ...:
-            select_stmt = select_stmt.where(self._model.name == name)
+            select_stmt = select_stmt.where(self._model.name.ilike(f"%{name}%"))
         if announcement_type is not ...:
             select_stmt = select_stmt.where(self._model.announcement_type == announcement_type)
         if parking_type is not ...:
