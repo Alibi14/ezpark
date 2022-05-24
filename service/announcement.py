@@ -1,13 +1,14 @@
-import asyncio
-import random
 from typing import Any, Dict, Optional, List
+from datetime import date, time, datetime
+from enum import Enum
+import random
+import asyncio
 from sqlalchemy.ext.asyncio import async_scoped_session
 from service.base import BaseService
 from provider import AnnouncementProvider
-from enum import Enum
+from service.auth import UserService
 import domain
 import exceptions
-from datetime import date, time, datetime
 
 
 class AnnouncementType(str, Enum):
@@ -17,13 +18,16 @@ class AnnouncementType(str, Enum):
 
 class AnnouncementService(BaseService):
     _provider: AnnouncementProvider
+    _user_service: UserService
 
     def __init__(self, session: async_scoped_session):
         super().__init__(session=session)
         self._provider = AnnouncementProvider(session=session)
+        self._user_service = UserService(session=session)
 
     async def create(
         self,
+        token: str,
         name: str,
         announcement_type: str,
         start_date: date,
@@ -36,6 +40,8 @@ class AnnouncementService(BaseService):
         price: float = ...,
     ) -> domain.Announcement:
 
+        user = await self._user_service.get_current_user(token=token)
+
         image_urls = [
             "https://uploads-ssl.webflow.com/621f6615a4c8a1d5166a4362/62615ca29b7d0a31079ac32e_smart%20parking.jpeg",
             "https://circontrol.com/wp-content/uploads/2019/02/180125-Circontrol-BAIXA-80.jpg",
@@ -44,9 +50,9 @@ class AnnouncementService(BaseService):
         ]
 
         if announcement_type == AnnouncementType.for_rent:
-            announcement_type = 0
-        elif announcement_type == AnnouncementType.for_sale:
             announcement_type = 1
+        elif announcement_type == AnnouncementType.for_sale:
+            announcement_type = 0
 
         return await self._provider.insert(
             name=name,
@@ -60,7 +66,7 @@ class AnnouncementService(BaseService):
             end_time=end_time,
             announced_date=announced_date,
             image_url=image_urls[random.randint(0, 3)],
-            favourite=bool(random.getrandbits(1))
+            owner_id=user.id
         )
 
     async def get(
@@ -77,6 +83,7 @@ class AnnouncementService(BaseService):
     async def select(
         self,
         name: str = ...,
+        address: str = ...,
         announcement_type: str = ...,
         parking_type: List = ...,
         min_price: float = ...,
@@ -87,9 +94,9 @@ class AnnouncementService(BaseService):
     ) -> domain.Announcements:
 
         if announcement_type == AnnouncementType.for_rent:
-            announcement_type = 0
-        elif announcement_type == AnnouncementType.for_sale:
             announcement_type = 1
+        elif announcement_type == AnnouncementType.for_sale:
+            announcement_type = 0
 
         return await self._provider.select_multi(
             name=name,
@@ -101,6 +108,14 @@ class AnnouncementService(BaseService):
             start_time=start_time,
             end_time=end_time
         )
+
+    async def select_my_announcements(
+        self,
+        token: str
+    ):
+        user = await self._user_service.get_current_user(token=token)
+
+        return await self._provider.select_multi(owner_id=user.id)
 
     async def edit(
         self,
@@ -116,6 +131,28 @@ class AnnouncementService(BaseService):
     ):
         await self._provider.delete(id=id)
         return {'deleted': f'item {id}'}
+
+    async def add_to_favourites(
+        self,
+        token: str,
+        id: int
+    ):
+        user = await self._user_service.get_current_user(token=token)
+        if user.favourite_announcements is None:
+            user.favourite_announcements = []
+        return await self._user_service.add_to_favourites(
+            id=user.id,
+            favourite_announcements=user.favourite_announcements,
+            announcement_id=id
+        )
+
+    async def select_favourite_announcements(
+        self,
+        token: str
+    ):
+        user = await self._user_service.get_current_user(token=token)
+
+        return await self._provider.select_multi(favourite_announcements=user.favourite_announcements)
     # async def get_or_create(
     #     self,
     #     url: str

@@ -16,20 +16,9 @@ class User(AbstractBaseModel):
 
     username = Column(String, unique=True, nullable=False)
     password = Column(String, nullable=False)
+    favourite_announcements = Column(types.ARRAY(Integer), nullable=True)
 
-
-class ChoiceType(types.TypeDecorator):
-    impl = types.String
-
-    def __init__(self, choices, **kw):
-        self.choices = dict(choices)
-        super(ChoiceType, self).__init__(**kw)
-
-    def process_bind_param(self, value, dialect):
-        return [k for k, v in self.choices.iteritems() if v == value][0]
-
-    def process_result_value(self, value, dialect):
-        return self.choices[value]
+    announcements = relationship("Announcement")
 
 
 class Announcement(AbstractBaseModel):
@@ -52,4 +41,6 @@ class Announcement(AbstractBaseModel):
     announced_date = Column(DateTime, nullable=True)
 
     image_url = Column(String)
-    favourite = Column(Boolean, default=False)
+
+    owner_id = Column(Integer, ForeignKey('user.id'))
+    owner = relationship("User", back_populates="announcements")

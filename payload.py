@@ -17,6 +17,7 @@ class AnnouncementCreatePayload(BaseModel):
 
 class AnnouncementListPayload(BaseModel):
     name: Optional[str] = None
+    address: Optional[str] = None
     announcement_type: Optional[Literal['for_sale', 'for_rent']] = None
     parking_type: Optional[List[int]] = None
     min_price: Optional[float] = None

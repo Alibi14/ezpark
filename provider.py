@@ -56,6 +56,38 @@ class UserProvider(BaseProvider):
 
         return adapters.record_to_user_without_password(record=record)
 
+    async def select_one(
+        self,
+        id: int = ...
+    ) -> domain.Announcement:
+
+        select_stmt = select(self._model)
+        select_stmt = select_stmt.where(self._model.id == id)
+
+        record = await self.session.scalar(select_stmt)
+        if not record:
+            raise exceptions.UserDoesNotExist
+
+        return adapters.record_to_announcement(record=record)
+
+    async def update(
+        self,
+        id: int,
+        **kwargs
+    ) -> domain.User:
+
+        data = self.clear_from_ellipsis(**kwargs)
+
+        select_stmt = select(self._model)
+
+        update_stmt = update(self._model).where(
+            self._model.id == id
+        ).values(**data).returning(self._model)
+        select_stmt = select_stmt.from_statement(update_stmt)
+
+        record = await self.session.scalar(select_stmt)
+        return adapters.record_to_user_without_password(record=record)
+
 
 class AnnouncementProvider(BaseProvider):
     _model: Type[models.Announcement] = models.Announcement
@@ -68,7 +100,6 @@ class AnnouncementProvider(BaseProvider):
 
         insert_stmt = insert(self._model).values(**data).returning(self._model)
         select_stmt = select(self._model).from_statement(insert_stmt)
-        print(select_stmt)
         record = await self.session.scalar(select_stmt) # execute
         return adapters.record_to_announcement(record)
 
@@ -99,7 +130,9 @@ class AnnouncementProvider(BaseProvider):
         max_price: float = ...,
         start_date: date = ...,
         start_time: time = ...,
-        end_time: time = ...
+        end_time: time = ...,
+        owner_id: int = ...,
+        favourite_announcements: List[int] = ...
     ) -> domain.Announcements:
 
         select_stmt = select(self._model)
@@ -121,7 +154,10 @@ class AnnouncementProvider(BaseProvider):
             select_stmt = select_stmt.where(self._model.start_time >= start_time)
         if end_time is not ...:
             select_stmt = select_stmt.where(self._model.end_time <= end_time)
-
+        if owner_id is not ...:
+            select_stmt = select_stmt.where(self._model.owner_id <= owner_id).join(models.User)
+        if favourite_announcements is not ...:
+            select_stmt = select_stmt.filter(self._model.id.in_(tuple(favourite_announcements)))
         records = await self.session.scalars(select_stmt) # db Object
         return adapters.records_to_announcements(records=records) # db Object -> python obJect
 
@@ -131,11 +167,12 @@ class AnnouncementProvider(BaseProvider):
         name: str = ...
     ) -> domain.Announcement:
 
+        select_stmt = select(self._model)
         if name is not ...:
             update_stmt = update(self._model).where(
                 self._model.id == id
             ).values(name=name).returning(self._model)
-            select_stmt = select(self._model).from_statement(update_stmt)
+            select_stmt = select_stmt.from_statement(update_stmt)
 
         record = await self.session.scalar(select_stmt)
         return adapters.record_to_announcement(record=record)

@@ -1,5 +1,5 @@
 from typing import List, Optional, Union
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from datetime import date, time, datetime
 
 
@@ -14,6 +14,7 @@ class User(AbstractBaseModel):
     email: Optional[Union[str, None]] = None
     phone_number: Optional[Union[str, None]] = None
     full_name: Optional[Union[str, None]] = None
+    favourite_announcements: Optional[List[int]] = []
 
 
 class UserInDatabase(User):
@@ -21,11 +22,12 @@ class UserInDatabase(User):
 
 
 class Token(BaseModel):
-    token: str
+    access_token: str
 
 
 class TokenData(BaseModel):
     username: Union[str, None] = None
+    scopes: List[str] = []
 
 
 class Announcement(AbstractBaseModel):
@@ -42,7 +44,7 @@ class Announcement(AbstractBaseModel):
 
     announced_date: datetime
     image_url: Optional[str]
-    favourite: Optional[bool]
+    owner_id = int
 
 
 class Announcements(AbstractBaseModel):
