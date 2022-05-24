@@ -1,3 +1,13 @@
 .idea/
 venv/
 test.py
+rsa.key
+rsa.key.pub
+__pycache__
+.coverage
+coverage.xml
+.netlify
+log.txt
+Pipfile.lock
+env3.*
+env
