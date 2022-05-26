@@ -13,6 +13,8 @@ class AnnouncementCreatePayload(BaseModel):
     parking_type: Optional[List[int]] = []
     address: str
     price: Optional[float]
+    longitude: Optional[float]
+    latitude: Optional[float]
 
 
 class AnnouncementListPayload(BaseModel):

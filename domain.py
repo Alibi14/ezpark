@@ -44,7 +44,9 @@ class Announcement(AbstractBaseModel):
 
     announced_date: datetime
     image_url: Optional[str]
-    owner_id = int
+    owner_id: int
+    longitude: Optional[float] = None
+    latitude: Optional[float] = None
 
 
 class Announcements(AbstractBaseModel):

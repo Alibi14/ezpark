@@ -44,3 +44,6 @@ class Announcement(AbstractBaseModel):
 
     owner_id = Column(Integer, ForeignKey('user.id'))
     owner = relationship("User", back_populates="announcements")
+
+    longitude = Column(Float, nullable=True)
+    latitude = Column(Float, nullable=True)

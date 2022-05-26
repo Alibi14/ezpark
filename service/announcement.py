@@ -38,6 +38,8 @@ class AnnouncementService(BaseService):
         parking_type: List[int] = [],
         address: str = ...,
         price: float = ...,
+        longitude: float = ...,
+        latitude: float = ...
     ) -> domain.Announcement:
 
         user = await self._user_service.get_current_user(token=token)
@@ -66,7 +68,9 @@ class AnnouncementService(BaseService):
             end_time=end_time,
             announced_date=announced_date,
             image_url=image_urls[random.randint(0, 3)],
-            owner_id=user.id
+            owner_id=user.id,
+            longitude=longitude,
+            latitude=latitude
         )
 
     async def get(
