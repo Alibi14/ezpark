@@ -16,6 +16,8 @@ class User(AbstractBaseModel):
 
     username = Column(String, unique=True, nullable=False)
     password = Column(String, nullable=False)
+    email = Column(String, nullable=True)
+    phone_number = Column(String, nullable=True)
     favourite_announcements = Column(types.ARRAY(Integer), nullable=True)
 
     announcements = relationship("Announcement")

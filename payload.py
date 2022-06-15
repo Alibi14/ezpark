@@ -1,6 +1,21 @@
 from typing import Any, Dict, List, Optional, Union, Literal
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError, validator
 from datetime import date, time, datetime
+
+
+class UserRegistrationPayload(BaseModel):
+
+    username: str
+    password1: str
+    password2: str
+    email: Optional[str] = None
+    phone_number: Optional[str] = None
+
+    @validator('password2')
+    def passwords_match(cls, v, values, **kwargs):
+        if v != values['password1']:
+            raise ValueError('passwords do not match')
+        return v
 
 
 class AnnouncementCreatePayload(BaseModel):

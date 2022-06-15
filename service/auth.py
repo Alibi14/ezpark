@@ -55,6 +55,23 @@ class UserService(BaseService):
             return False
         return user
 
+    async def registration(
+            self,
+            username: str,
+            password1: str,
+            password2: str,
+            email: str,
+            phone_number: str
+    ):
+        hashed_password = self.get_password_hash(password=password1)
+
+        user = await self._provider.insert(
+            username=username,
+            password=hashed_password,
+            email=email,
+            phone_number=phone_number)
+        return user
+
     def create_access_token(
             self,
             data: dict,

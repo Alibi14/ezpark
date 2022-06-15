@@ -6,7 +6,8 @@ from fastapi.security import (
 )
 from service.auth import UserService
 from service.announcement import AnnouncementService
-from payload import AnnouncementCreatePayload, AnnouncementListPayload, AnnouncementGetOneElementPayload
+from payload import AnnouncementCreatePayload, AnnouncementListPayload, AnnouncementGetOneElementPayload, \
+    UserRegistrationPayload
 import domain
 from middleware import app
 
@@ -33,6 +34,16 @@ async def read_users_me(
 ) -> domain.User:
     service = UserService(session=reqeust.state.session)
     return await service.get_current_user(token=current_user)
+
+
+@app.post('/registration', response_model=domain.User)
+async def registration(
+        request: Request
+):
+    body = await request.json()
+    payload = UserRegistrationPayload(**body)
+    service = UserService(session=request.state.session)
+    return await service.registration(**payload.dict(exclude_unset=True))
 
 
 # Announcements

@@ -26,6 +26,17 @@ class BaseProvider:
 class UserProvider(BaseProvider):
     _model: Type[models.User] = models.User
 
+    async def insert(
+            self,
+            **kwargs
+    ) -> domain.User:
+        data = self.clear_from_ellipsis(**kwargs)
+
+        insert_stmt = insert(self._model).values(**data).returning(self._model)
+        select_stmt = select(self._model).from_statement(insert_stmt)
+        record = await self.session.scalar(select_stmt)  # execute
+        return adapters.record_to_user_without_password(record)
+
     async def user_with_password(
         self,
         username: str
@@ -158,6 +169,9 @@ class AnnouncementProvider(BaseProvider):
             select_stmt = select_stmt.where(self._model.owner_id <= owner_id).join(models.User)
         if favourite_announcements is not ...:
             select_stmt = select_stmt.filter(self._model.id.in_(tuple(favourite_announcements)))
+
+        select_stmt = select_stmt.order_by(self._model.announced_date.desc())
+
         records = await self.session.scalars(select_stmt) # db Object
         return adapters.records_to_announcements(records=records) # db Object -> python obJect
 

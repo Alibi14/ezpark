@@ -46,7 +46,7 @@ class AnnouncementService(BaseService):
 
         image_urls = [
             "https://uploads-ssl.webflow.com/621f6615a4c8a1d5166a4362/62615ca29b7d0a31079ac32e_smart%20parking.jpeg",
-            "https://circontrol.com/wp-content/uploads/2019/02/180125-Circontrol-BAIXA-80.jpg",
+            "https://upload.wikimedia.org/wikipedia/commons/1/19/Blue_Disc_Parking_Area_Markings_Blue_Paint.JPG",
             "https://thumbs.dreamstime.com/b/d-render-parking-lot-d-render-parking-lot-auto-parking-area-168894850.jpg",
             "https://thephiladelphiacitizen.org/wp-content/uploads/2019/07/apartments-1265032_960_720.jpg"
         ]
